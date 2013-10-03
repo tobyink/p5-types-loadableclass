@@ -49,6 +49,8 @@ __END__
 
 =encoding utf-8
 
+=for stopwords Mannsåker
+
 =head1 NAME
 
 Types::LoadableClass - type constraints with coercion to load the class
