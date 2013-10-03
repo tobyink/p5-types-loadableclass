@@ -28,18 +28,22 @@ use Test::More;
 use Class::Load 'is_class_loaded';
 use Types::LoadableClass qw(LoadableClass LoadableRole);
 
-ok !is_class_loaded('FooBarTestClass');
-ok LoadableClass->check('FooBarTestClass');
-ok is_class_loaded('FooBarTestClass');
+ok !is_class_loaded('FooBarTestClassPlain');
+ok LoadableClass->check('FooBarTestClassPlain');
+ok is_class_loaded('FooBarTestClassPlain');
 
 ok !LoadableClass->check('FooBarTestClassDoesNotExist');
 
-ok !is_class_loaded('FooBarTestRole');
-ok LoadableRole->check('FooBarTestRole');
-ok is_class_loaded('FooBarTestRole');
+ok !is_class_loaded('FooBarTestRolePlain');
+ok LoadableRole->check('FooBarTestRolePlain');
+ok is_class_loaded('FooBarTestRolePlain');
 
-ok !LoadableRole->check('FooBarTestClass');
+ok !LoadableRole->check('FooBarTestClassPlain');
 
 ok !LoadableRole->check('FooBarTestRoleDoesNotExist');
+
+if ( $ENV{EXTENDED_TESTING} ) {
+	ok !$INC{'Moose.pm'};
+}
 
 done_testing;

@@ -4,7 +4,7 @@
 
 =head1 PURPOSE
 
-Class used by basic.t.
+Moose class used by basic.t.
 
 =head1 AUTHOR
 

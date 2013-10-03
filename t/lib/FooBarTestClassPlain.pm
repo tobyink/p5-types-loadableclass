@@ -4,25 +4,24 @@
 
 =head1 PURPOSE
 
-Class used by clobber_dollerunderscore.t.
+Non-Moo* class used by no_moose.t.
 
 =head1 AUTHOR
 
-Tomas Doran E<lt>bobtfish@bobtfish.netE<gt>.
+Toby Inkster E<lt>tobyink@cpan.orgE<gt>.
 
 =head1 COPYRIGHT AND LICENCE
 
-This software is copyright (c) 2010 by Infinity Interactive, Inc.
+This software is copyright (c) 2013 by Toby Inkster.
 
 This is free software; you can redistribute it and/or modify it under
 the same terms as the Perl 5 programming language system itself.
 
 =cut
 
-package ClobberDollarUnderscore;
+package FooBarTestClassPlain;
 
 sub new { bless {}, shift }
 
-$_ = undef;
 1;
 

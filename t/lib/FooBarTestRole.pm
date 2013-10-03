@@ -4,7 +4,7 @@
 
 =head1 PURPOSE
 
-Role used by basic.t.
+Moose role used by basic.t.
 
 =head1 AUTHOR
 
