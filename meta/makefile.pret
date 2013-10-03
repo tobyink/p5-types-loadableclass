@@ -3,7 +3,17 @@
 @prefix : <http://ontologi.es/doap-deps#>.
 
 `Types-LoadableClass`
+	:runtime-requirement    [ :on "Type::Library 0.026"^^:CpanId ];
+	:runtime-requirement    [ :on "Type::Utils 0.026"^^:CpanId ];
+	:runtime-requirement    [ :on "Types::Standard 0.026"^^:CpanId ];
+	:runtime-requirement    [ :on "Module::Runtime"^^:CpanId ];
+	:runtime-requirement    [ :on "Class::Load"^^:CpanId ];
+	:runtime-requirement    [ :on "perl 5.006001"^^:CpanId ];
 	:test-requirement       [ :on "Test::More 0.96"^^:CpanId ];
+	:test-requirement       [ :on "Test::Fatal"^^:CpanId ];
+	:test-requirement       [ :on "Test::Requires 0.06"^^:CpanId ];
+	:test-suggestion        [ :on "Moose 2.0000"^^:CpanId ];
+	:test-recommendation    [ :on "Moo 1.000000"^^:CpanId ];
 	:develop-recommendation [ :on "Dist::Inkt 0.001"^^:CpanId ];
 	.
 

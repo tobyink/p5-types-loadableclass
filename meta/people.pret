@@ -7,3 +7,8 @@ cpan:TOBYINK
 	:page  <https://metacpan.org/author/TOBYINK>;
 	:mbox  <mailto:tobyink@cpan.org>.
 
+cpan:ILMARI
+	:name  "Dagfinn Ilmari Mannsåker";
+	:page  <https://metacpan.org/author/ILMARI>;
+	:mbox  <mailto:ilmari@cpan.org>.
+
