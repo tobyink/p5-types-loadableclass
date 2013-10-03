@@ -5,7 +5,7 @@ use warnings;
 package Types::LoadableClass;
 
 our $AUTHORITY = 'cpan:TOBYINK';
-our $VERSION   = '0.001';
+our $VERSION   = '0.002';
 
 use Type::Library
 	-base,
