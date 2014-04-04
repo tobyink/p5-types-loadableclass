@@ -10,3 +10,13 @@
 		item "List correct dependencies."^^Packaging;
 	].
 
+`Types-LoadableClass 0.003 cpan:TOBYINK`
+	issued  2013-04-04;
+	changeset [
+		item [
+			label "Various features inspired by RT#91802";
+			seealso <https://rt.cpan.org/Ticket/Display.html?id=91802>;
+			dcs:thanks <urn:uuid:580d3dfe-fe45-42ef-9f58-1310ffee7004>;
+		];
+	].
+
