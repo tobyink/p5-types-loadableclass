@@ -9,7 +9,10 @@ our $VERSION   = '0.002';
 
 use Type::Library
 	-base,
-	-declare => qw( ModuleName LoadableClass LoadableRole );
+	-declare => qw(
+		ModuleName LoadableClass LoadableRole
+		ClassIsa ClassDoes ClassCan
+	);
 
 use Type::Utils -all;
 use Types::Standard qw( StrMatch RoleName );
@@ -40,6 +43,93 @@ declare LoadableRole,
 	message {
 		LoadableClass->validate($_) or "'$_' is not a loadable role";
 	};
+
+declare ClassIsa,
+	as LoadableClass,
+	constraint_generator => sub {
+		my @bases = @_ or return ClassIsa;
+		return sub {
+			$_[0]->isa($_) && return !!1 for @bases;
+			return !!0;
+		};
+	},
+	inline_generator => sub {
+		my @bases = @_;
+		return sub {
+			my $var = $_[1];
+			return (
+				undef,
+				sprintf(
+					'(%s)',
+					join(
+						' or ',
+						map(sprintf('%s->isa(%s)', $var, B::perlstring($_)), @bases),
+					),
+				),
+			);
+		};
+	};
+
+declare ClassDoes,
+	as LoadableClass,
+	constraint_generator => sub {
+		my @roles = @_ or return ClassDoes;
+		return sub {
+			$_[0]->DOES($_) || return !!0 for @roles;
+			return !!1;
+		};
+	},
+	inline_generator => sub {
+		my @roles = @_;
+		return sub {
+			my $var = $_[1];
+			return (
+				undef,
+				sprintf(
+					'do { my $method = %s->can("DOES")||%s->can("isa"); %s } ',
+					$var,
+					$var,
+					join(
+						' and ',
+						map(sprintf('%s->$method(%s)', $var, B::perlstring($_)), @roles),
+					),
+				),
+			);
+		};
+	};
+
+declare ClassCan,
+	as LoadableClass,
+	constraint_generator => sub {
+		my @methods = @_ or return ClassCan;
+		return sub {
+			$_[0]->can($_) || return !!0 for @methods;
+			return !!1;
+		};
+	},
+	inline_generator => sub {
+		my @methods = @_;
+		return sub {
+			my $var = $_[1];
+			return (
+				undef,
+				map(sprintf('%s->can(%s)', $var, B::perlstring($_)), @methods),
+			);
+		};
+	};
+
+__PACKAGE__->meta->add_coercion({
+	name               => 'ExpandPrefix',
+	type_constraint    => ModuleName,
+	coercion_generator => sub {
+		my ($self, $target, $prefix) = @_;
+		Types::TypeTiny::StringLike->assert_valid($prefix);
+		return (
+			StrMatch[qr{\A-.+}],
+			qq{ do { (my \$tmp = \$_) =~ s{\\A-}{$prefix\::}; \$tmp } },
+		);
+	}
+});
 
 1;
 
@@ -110,7 +200,83 @@ particular implementation of roles. Therefore is needs to use a
 heuristic to detect whether a loaded package represents a role or not.
 Curently this heuristic is the absence of a method named C<new>.)
 
+=item C<< ClassIsa[`a] >>
+
+A subtype of C<LoadableClass> which checks that the class is a subclass
+of a given base class:
+
+   ClassIsa["MyApp::Plugin"]
+
+Multiple base classes may be provided. A class only needs to satisy one
+isa to pass the type constraint check.
+
+   ClassIsa["MyApp::Plugin", "YourApp::Plugin"]
+
+=item C<< ClassDoes[`a] >>
+
+A subtype of C<LoadableClass> which checks that the class performs a
+given role. (This uses L<UNIVERSAL/"DOES">.) If multiple roles are
+given, the class must perform all of them.
+
+   ClassDoes["MyApp::Role::Loadable", "MyApp::Role::Dumpable"]
+
+=item C<< ClassCan[`a] >>
+
+A subtype of C<LoadableClass> which checks that the class provides
+particular methods:
+
+   ClassCan[ qw( new load dump ) ]
+
 =back
+
+=head2 Type Coercions
+
+The following named coercion can be exported:
+
+=over
+
+=item C<< ExpandPrefix[`a] >>
+
+A coercion to expand class name abbreviations starting with a dash using
+a given prefix.
+
+   my $type = LoadableClass->plus_coercions(ExpandPrefix["Foo"]);
+   say $type->coerce( "-Bar" );    # Foo::Bar
+   say $type->coerce(  "Baz" );    # Baz
+
+=back
+
+If accepting class names from somewhere, it can be useful to provide a
+"default namespace" to avoid Really::Long::Package::Names::Everywhere.
+Here's an example of how you can do that:
+
+   use strict; use warnings; use feature qw( say );
+   
+   package MyApp {
+      use Moose;
+      use Types::LoadableClass qw( ClassDoes ExpandPrefix );
+      use Types::Standard qw( ArrayRef StrMatch );
+      
+      my $plugin_class = (
+         ClassDoes["MyApp::Role::Plugin"]
+      ) -> plus_coercions (
+         ExpandPrefix[ "MyApp::Plugin" ]
+      );
+      
+      has plugins => (
+         is     => 'ro',
+         isa    => ArrayRef[ $plugin_class ],
+         coerce => 1,
+      );
+   }
+   
+   my $app = MyApp->new(
+      plugins => [qw( -Foo -Bar MyApp::Baz )],
+   );
+   
+   say for @{ $app->plugins };   # MyApp::Plugin::Foo
+                                 # MyApp::Plugin::Bar
+                                 # MyApp::Baz
 
 =head1 BUGS
 
@@ -126,11 +292,16 @@ L<Module::Runtime>.
 
 Dagfinn Ilmari Mannsåker E<lt>ilmari@ilmari.orgE<gt>.
 
-Improvements and packaging by Toby Inkster E<lt>tobyink@cpan.orgE<gt>.
+Improvements, packaging, and additions by Toby Inkster
+E<lt>tobyink@cpan.orgE<gt>.
+
+The C<ClassIsa>, C<ClassDoes>, and C<ClassCan> types are based on
+L<suggestions|https://rt.cpan.org/Ticket/Display.html?id=91802> by
+Benct Philip Jonsson.
 
 =head1 COPYRIGHT AND LICENCE
 
-This software is copyright (c) 2013 by Dagfinn Ilmari Mannsåker,
+This software is copyright (c) 2013-2014 by Dagfinn Ilmari Mannsåker,
 Toby Inkster.
 
 This is free software; you can redistribute it and/or modify it under
